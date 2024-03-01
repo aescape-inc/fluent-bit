@@ -1,22 +1,6 @@
 name: aescape pr build
 on:
   workflow_dispatch: {}
-  pull_request:
-    paths-ignore:
-      - '.github/**'
-      - 'dockerfiles/**'
-      - 'docker_compose/**'
-      - 'packaging/**'
-      - '.gitignore'
-      - 'appveyor.yml'
-      - '**.sh'
-      - 'examples/**'
-    branches:
-      - master
-      - ae/def
-      - ae/master
-      - ae/2.2
-      - ae/test
 
 jobs:
   pr_build_verification:

@@ -1,0 +1,65 @@
+# act -W .github/workflows/ae-build-push.yaml -s AWS_ACCESS_KEY_ID -s AWS_SECRET_ACCESS_KEY --action-offline-mode push
+
+name: aescape build on push
+on:
+  workflow_dispatch: {}
+  push:
+    paths-ignore:
+      - '.github/**'
+      - '.gitignore'
+      - 'appveyor.yml'
+    branches:
+      - ae/def
+      - ae/master
+      - ae/2.2
+      - ae/test
+jobs:
+  pr_build_verification:
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    # - name: AWS Credentials
+    #   uses: aws-actions/configure-aws-credentials@v1
+    #   with:
+    #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+    #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    #     aws-region: us-east-2
+    # - name: Login to Amazon ECR
+    #   uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Extract metadata from Github
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: 238850544904.dkr.ecr.us-east-2.amazonaws.com/fluent-bit
+        tags: |
+          type=sha
+
+    - name: verify
+      id : verify
+      shell: bash
+      run: |
+        echo "verify"
+        echo ${{ steps.meta.outputs.images }}
+        echo ${{ steps.meta.outputs.tags
+        env
+
+
+    # - name: Build and push debug image
+    #   id: build_image
+    #   uses: docker/build-push-action@v5
+    #   with:
+    #     file: ./dockerfiles/Dockerfile
+    #     context: .
+    #     platforms: linux/amd64
+    #     target: debug
+    #     # Must be disabled to provide legacy format images from the registry
+    #     provenance: false
+    #     push: true
+    #     load: false
+    #     build-args: |
+    #       FLB_NIGHTLY_BUILD=ON
