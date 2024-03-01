@@ -1,3 +1,4 @@
+name: aescape pr build
 on:
   workflow_dispatch: {}
   pull_request: {}
