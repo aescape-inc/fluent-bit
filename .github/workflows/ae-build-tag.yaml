@@ -1,4 +1,4 @@
-name: aescape pr build
+name: aescape build on tag
 on:
   workflow_dispatch: {}
 

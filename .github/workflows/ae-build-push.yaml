@@ -45,7 +45,7 @@ jobs:
       run: |
         echo "verify"
         echo ${{ steps.meta.outputs.images }}
-        echo ${{ steps.meta.outputs.tags
+        echo ${{ steps.meta.outputs.tags }}
         env
 
 
