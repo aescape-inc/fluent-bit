@@ -11,9 +11,9 @@ jobs:
       with:
         fetch-depth: 0
     - name: test workflow
-        shell: bash
-        env:
-          CI: "1"
-        run: |
-          pwd
-          ls -la
+      shell: bash
+      env:
+        CI: "1"
+      run: |
+        pwd
+        ls -la
