@@ -1,0 +1,46 @@
+name: aescape pr build
+on:
+  workflow_dispatch: {}
+  pull_request:
+    paths-ignore:
+      - '.github/**'
+      - 'dockerfiles/**'
+      - 'docker_compose/**'
+      - 'packaging/**'
+      - '.gitignore'
+      - 'appveyor.yml'
+      - '**.sh'
+      - 'examples/**'
+    branches:
+      - master
+      - ae/def
+      - ae/master
+      - ae/2.2
+      - ae/test
+
+jobs:
+  pr_build_verification:
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build image
+      id: build_image
+      uses: docker/build-push-action@v5
+      with:
+        file: ./dockerfiles/Dockerfile
+        context: .
+        platforms: linux/amd64
+        target: debug
+        # Must be disabled to provide legacy format images from the registry
+        provenance: false
+        push: false
+        load: false
+        build-args: |
+          FLB_NIGHTLY_BUILD=ON

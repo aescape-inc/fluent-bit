@@ -1,0 +1,90 @@
+# act -W .github/workflows/ae-build-push.yaml -s AWS_ACCESS_KEY_ID -s AWS_SECRET_ACCESS_KEY --action-offline-mode push 
+
+name: aescape build on push
+on:
+  workflow_dispatch: {}
+  push:
+    paths-ignore:
+      - '.github/**'
+      - '.gitignore'
+      - 'appveyor.yml'
+    branches:
+      - ae/def
+      - ae/master
+      - ae/2.2
+      - ae/test
+jobs:
+  build_and_push:
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-2
+    - name: Login to Amazon ECR
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Extract metadata from Github (tag debug image)
+      id: debug-meta
+      uses: docker/metadata-action@v5
+      with:
+        images: 238850544904.dkr.ecr.us-east-2.amazonaws.com/fluent-bit
+        flavor: |
+          latest=false
+          prefix=core-
+        tags: |
+          type=semver,pattern={{version}},suffix=-debug
+          type=sha,prefix=core-{{branch}}-sha,suffix=-debug
+
+    - name: Build and push debug image
+      id: build_image
+      uses: docker/build-push-action@v5
+      with:
+        file: ./dockerfiles/Dockerfile
+        context: .
+        platforms: linux/amd64
+        target: debug
+        # Must be disabled to provide legacy format images from the registry
+        provenance: false
+        push: true
+        load: false
+        tags: ${{ steps.debug-meta.outputs.tags }}
+        labels: ${{ steps.debug-meta.outputs.labels }}
+        build-args: |
+          FLB_NIGHTLY_BUILD=OFF
+
+    - name: Extract metadata from Github
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: 238850544904.dkr.ecr.us-east-2.amazonaws.com/fluent-bit
+        flavor: |
+          latest=false
+          prefix=core-
+        tags: |
+          type=type=semver,pattern={{version}}
+          type=sha,prefix=core-{{branch}}-sha
+
+    - name: Build and push production image
+      id: build_image
+      uses: docker/build-push-action@v5
+      with:
+        file: ./dockerfiles/Dockerfile
+        context: .
+        platforms: linux/amd64
+        target: production
+        # Must be disabled to provide legacy format images from the registry
+        provenance: false
+        push: true
+        load: false
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        build-args: |
+          FLB_NIGHTLY_BUILD=OFF
