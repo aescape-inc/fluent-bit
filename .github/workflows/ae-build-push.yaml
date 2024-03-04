@@ -1,6 +1,6 @@
 # act -W .github/workflows/ae-build-push.yaml -s AWS_ACCESS_KEY_ID -s AWS_SECRET_ACCESS_KEY --action-offline-mode push
 
-name: aescape build on push
+name: aescape build on push and tags
 on:
   workflow_dispatch: {}
   push:
@@ -14,22 +14,22 @@ on:
       - ae/2.2
       - ae/test
 jobs:
-  pr_build_verification:
+  build_and_push:
     runs-on: ubuntu-22.04
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
     - name: AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1
+      uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-2
     - name: Login to Amazon ECR
-      uses: aws-actions/amazon-ecr-login@v1
+      uses: aws-actions/amazon-ecr-login@v2
 
     - name: Extract metadata from Github
       id: meta
@@ -40,18 +40,8 @@ jobs:
           latest=false
           prefix=core-
         tags: |
-          type=sha
+          type=sha,prefix=core-{{branch}}
           type=ref,event=tag
-
-    - name: verify
-      id : verify
-      shell: bash
-      run: |
-        echo "verify"
-        echo ${{ steps.meta.outputs.images }}
-        echo ${{ steps.meta.outputs.tags }}
-        env
-
 
     - name: Build and push debug image
       id: build_image
@@ -65,5 +55,6 @@ jobs:
         provenance: false
         push: true
         load: false
+        tags: ${{ steps.meta.outputs.tags }}
         build-args: |
           FLB_NIGHTLY_BUILD=ON
