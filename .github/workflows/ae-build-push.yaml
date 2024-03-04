@@ -44,7 +44,7 @@ jobs:
           type=sha,prefix=core-{{branch}}-sha,suffix=-debug
 
     - name: Build and push debug image
-      id: build_image
+      id: build_image_debug
       uses: docker/build-push-action@v5
       with:
         file: ./dockerfiles/Dockerfile
