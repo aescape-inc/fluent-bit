@@ -10,11 +10,6 @@ on:
       - 'appveyor.yml'
     tags:
       - 'v*'
-    branches:
-      - ae/def
-      - ae/master
-      - ae/2.2
-      - ae/test
 
 jobs:
   build_and_push:
