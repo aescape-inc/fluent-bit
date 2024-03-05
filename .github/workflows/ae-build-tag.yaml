@@ -1,4 +1,4 @@
-# act -W .github/workflows/ae-build-tag.yaml -s AWS_ACCESS_KEY_ID -s AWS_SECRET_ACCESS_KEY --action-offline-mode push 
+# act -W .github/workflows/ae-build-tag.yaml -s AWS_ACCESS_KEY_ID -s AWS_SECRET_ACCESS_KEY --action-offline-mode push
 
 name: aescape build on tags
 on:
@@ -22,7 +22,7 @@ jobs:
 
     - name: Extract version
       run: |
-        echo AE_VERSION=${GITHUB_REF#refs/tags/v}
+        echo AE_VERSION=${GITHUB_REF#refs/tags/v} >> $GITHUB_ENV
 
     - name: AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4
@@ -61,7 +61,7 @@ jobs:
         labels: ${{ steps.debug-meta.outputs.labels }}
         build-args: |
           FLB_NIGHTLY_BUILD=OFF
-          RELEASE_VERSION=$AE_VERSION
+          RELEASE_VERSION=${{ env.AE_VERSION }}
 
     - name: Extract metadata from Github
       id: meta
@@ -91,4 +91,4 @@ jobs:
         labels: ${{ steps.meta.outputs.labels }}
         build-args: |
           FLB_NIGHTLY_BUILD=OFF
-          RELEASE_VERSION=$AE_VERSION
+          RELEASE_VERSION=${{ env.AE_VERSION }}
