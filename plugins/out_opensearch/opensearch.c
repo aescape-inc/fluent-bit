@@ -973,6 +973,27 @@ static void cb_opensearch_flush(struct flb_event_chunk *event_chunk,
             if (c->resp.payload_size > 0) {
                 flb_plg_error(ctx->ins, "HTTP status=%i URI=%s, response:\n%s\n",
                               c->resp.status, ctx->uri, c->resp.payload);
+
+#ifdef FLB_HAVE_AWS
+                /*
+                * 400 or 403 could indicate an issue with credentials- so we
+                * check for auth specific error messages and then force a
+                * refresh on the provider. For safety a refresh can be performed
+                * only once per FLB_AWS_CREDENTIAL_REFRESH_LIMIT.
+                *
+                */
+                if (c->resp.status == 403) {
+                    if (ctx->has_aws_auth && time(NULL) > ctx->refresh_limit) {
+                        if (flb_aws_is_auth_error(c->resp.payload, c->resp.payload_size)
+                            == FLB_TRUE) {
+                            flb_info("[aws_client] auth error, refreshing creds");
+                            ctx->refresh_limit = time(NULL)
+                                                 + FLB_AWS_CREDENTIAL_REFRESH_LIMIT;
+                            ctx->aws_provider->provider_vtable->refresh(ctx->aws_provider);
+                        }
+                    }
+                }
+#endif
             }
             else {
                 flb_plg_error(ctx->ins, "HTTP status=%i URI=%s",

@@ -82,6 +82,7 @@ struct flb_opensearch {
     char *aws_session_name;
     char *aws_service_name;
     struct mk_list *aws_unsigned_headers;
+    time_t refresh_limit;
 #endif
 
     /* HTTP Client Setup */
