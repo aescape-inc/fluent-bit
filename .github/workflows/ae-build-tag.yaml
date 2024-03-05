@@ -60,7 +60,6 @@ jobs:
         tags: ${{ steps.debug-meta.outputs.tags }}
         labels: ${{ steps.debug-meta.outputs.labels }}
         build-args: |
-          FLB_NIGHTLY_BUILD=OFF
           RELEASE_VERSION=${{ env.AE_VERSION }}
 
     - name: Extract metadata from Github
@@ -90,5 +89,4 @@ jobs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         build-args: |
-          FLB_NIGHTLY_BUILD=OFF
           RELEASE_VERSION=${{ env.AE_VERSION }}
