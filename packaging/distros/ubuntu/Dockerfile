@@ -165,4 +165,4 @@ ARG PKG_VERSION=1.0.0
 ENV PKG_VERSION=$PKG_VERSION
 
 VOLUME [ "/output" ]
-CMD [ "/bin/bash", "-c", "make -j 4 && cpack -G DEB -R ${PKG_VERSION} -D CPACK_DEBIAN_RUNTIME_FILE_NAME=fluent-bit_${PKG_VERSION}_amd64.deb && cp *.deb /output/" && chown -R 1000:1000 /output/ ]
+CMD [ "/bin/bash", "-c", "make -j 4 && cpack -G DEB -R ${PKG_VERSION} -D CPACK_DEBIAN_RUNTIME_FILE_NAME=fluent-bit_${PKG_VERSION}_amd64.deb && cp *.deb /output/ && chown -R 1000:1000 /output/" ]

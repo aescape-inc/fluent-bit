@@ -116,23 +116,22 @@ jobs:
         -f packaging/distros/ubuntu/Dockerfile \
         .
         mkdir -p deb_output
-        echo docker run --rm -v "${PWD}/deb_output:/output" flb-ubuntu/22.04
         docker run --rm -v "${PWD}/deb_output:/output" flb-ubuntu/22.04
         ls -l deb_output
-        ls -l deb_output/fluent-bit_{{ env.AE_VERSION }}_amd64.deb
+        ls -l deb_output/fluent-bit_${{ env.AE_VERSION }}_amd64.deb
 
     - name: upload artifact
       uses: actions/upload-artifact@v4
       if: ${{ env.ACT != 'true' }}
       with:
         path: |
-          deb_output/fluent-bit_{{ env.AE_VERSION }}_amd64.deb
+          deb_output/fluent-bit_${{ env.AE_VERSION }}_amd64.deb
 
     - name: upload artifact to s3
       uses: keithweaver/aws-s3-github-action@v1.0.0
       with:
         command: cp
-        source: deb_output/fluent-bit_{{ env.AE_VERSION }}_amd64.deb
+        source: deb_output/fluent-bit_${{ env.AE_VERSION }}_amd64.deb
         destination: s3://aescape-releases/fluent/
         aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
