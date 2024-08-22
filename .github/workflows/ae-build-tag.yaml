@@ -2,7 +2,12 @@
 
 name: aescape build on tags
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Tag to build'
+        required: false
+        default: ''
   push:
     paths-ignore:
       - '.github/**'
@@ -22,7 +27,14 @@ jobs:
 
     - name: Extract version
       run: |
-        echo AE_VERSION=${GITHUB_REF#refs/tags/v} >> $GITHUB_ENV
+        echo GITHUB_REF=$GITHUB_REF
+        echo Input version: ${{ github.event.inputs.version }}
+        VERSION=${GITHUB_REF#refs/tags/v}
+        if [ -n "${{ github.event.inputs.version }}" ]; then
+          VERSION=${{ github.event.inputs.version }}
+        fi
+        echo VERSION=$VERSION
+        echo AE_VERSION=$VERSION >> $GITHUB_ENV
 
     - name: AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4
@@ -90,3 +102,38 @@ jobs:
         labels: ${{ steps.meta.outputs.labels }}
         build-args: |
           RELEASE_VERSION=${{ env.AE_VERSION }}
+
+    - name: Build deb file
+      id: build_deb
+      run: |
+        docker build --build-arg CMAKE_INSTALL_PREFIX=/opt/fluent-bit/ \
+        --build-arg FLB_JEMALLOC=On \
+        --build-arg FLB_TD=Off \
+        --build-arg BASE_BUILDER=ubuntu-22.04-base \
+        --build-arg PKG_VERSION=${{ env.AE_VERSION }} \
+        --target builder \
+        -t flb-ubuntu/22.04 \
+        -f packaging/distros/ubuntu/Dockerfile \
+        .
+        mkdir -p deb_output
+        echo docker run --rm -v "${PWD}/deb_output:/output" flb-ubuntu/22.04
+        docker run --rm -v "${PWD}/deb_output:/output" flb-ubuntu/22.04
+        ls -l deb_output
+        ls -l deb_output/fluent-bit_{{ env.AE_VERSION }}_amd64.deb
+
+    - name: upload artifact
+      uses: actions/upload-artifact@v4
+      if: ${{ env.ACT != 'true' }}
+      with:
+        path: |
+          deb_output/fluent-bit_{{ env.AE_VERSION }}_amd64.deb
+
+    - name: upload artifact to s3
+      uses: keithweaver/aws-s3-github-action@v1.0.0
+      with:
+        command: cp
+        source: deb_output/fluent-bit_{{ env.AE_VERSION }}_amd64.deb
+        destination: s3://aescape-releases/fluent/
+        aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws_region: us-east-2

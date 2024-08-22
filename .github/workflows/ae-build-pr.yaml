@@ -1,3 +1,5 @@
+# act -W .github/workflows/ae-build-pr.yaml --action-offline-mode pull_request
+
 name: aescape pr build
 on:
   workflow_dispatch: {}

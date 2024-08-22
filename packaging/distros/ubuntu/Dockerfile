@@ -161,5 +161,8 @@ RUN cmake -DCMAKE_INSTALL_PREFIX="$CMAKE_INSTALL_PREFIX" \
     -DFLB_CHUNK_TRACE="${FLB_CHUNK_TRACE}" \
     ../
 
+ARG PKG_VERSION=1.0.0
+ENV PKG_VERSION=$PKG_VERSION
+
 VOLUME [ "/output" ]
-CMD [ "/bin/bash", "-c", "make -j 4 && cpack -G DEB && cp *.deb /output/" ]
+CMD [ "/bin/bash", "-c", "make -j 4 && cpack -G DEB -R ${PKG_VERSION} -D CPACK_DEBIAN_RUNTIME_FILE_NAME=fluent-bit_${PKG_VERSION}_amd64.deb && cp *.deb /output/" && chown -R 1000:1000 /output/ ]

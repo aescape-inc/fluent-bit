@@ -1,4 +1,4 @@
-# act -W .github/workflows/ae-build-push.yaml -s AWS_ACCESS_KEY_ID -s AWS_SECRET_ACCESS_KEY --action-offline-mode push 
+# act -W .github/workflows/ae-build-push.yaml -s AWS_ACCESS_KEY_ID -s AWS_SECRET_ACCESS_KEY --action-offline-mode push
 
 name: aescape build on push
 on:
@@ -6,8 +6,13 @@ on:
   push:
     paths-ignore:
       - '.github/**'
+      - 'dockerfiles/**'
+      - 'docker_compose/**'
+      - 'packaging/**'
       - '.gitignore'
       - 'appveyor.yml'
+      - '**.sh'
+      - 'examples/**'
     branches:
       - ae/def
       - ae/master
@@ -58,7 +63,7 @@ jobs:
         tags: ${{ steps.debug-meta.outputs.tags }}
         labels: ${{ steps.debug-meta.outputs.labels }}
         build-args: |
-          FLB_NIGHTLY_BUILD=OFF
+          FLB_NIGHTLY_BUILD=push
 
     - name: Extract metadata from Github
       id: meta
@@ -87,4 +92,4 @@ jobs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         build-args: |
-          FLB_NIGHTLY_BUILD=OFF
+          FLB_NIGHTLY_BUILD=push
